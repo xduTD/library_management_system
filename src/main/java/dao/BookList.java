@@ -1,5 +1,5 @@
 package dao;
 
-public class BookList{
+public class BookList {
     Book[] b = new Book[100];
 }

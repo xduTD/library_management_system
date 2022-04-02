@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 public class ServerImpl implements Server {
-    private ServerSocket listenSocket;
     private Manager manager;
 
     public ServerImpl() {
 
-        this.manager = new Manager();
+        this.manager = Manager.getInstance();
     }
 
     public static void main(String[] args) {
