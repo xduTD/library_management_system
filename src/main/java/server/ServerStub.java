@@ -6,8 +6,11 @@ import java.net.ServerSocket;
 
 public class ServerStub implements Client {
     private ServerSocket serverSocket;
-
     ServerStub() {
+
+    }
+
+    public static void main(String[] args) {
 
     }
 

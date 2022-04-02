@@ -1,11 +1,8 @@
 package server;
 
 import dao.Book;
-import dao.BookList;
 
-import java.io.Serializable;
-
-public interface Server implements Serializable {
+public interface Server {
 
     boolean add(Book nb);
 
@@ -13,6 +10,6 @@ public interface Server implements Serializable {
 
     Book queryByID(int bookId);
 
-    BookList queryByName(String name);
+    Book queryByName(String name);
 
 }

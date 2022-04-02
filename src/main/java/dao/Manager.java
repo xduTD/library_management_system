@@ -18,12 +18,12 @@ public class Manager {
     }
 
     /* */
-    void addBook(Book book) {
+    public void addBook(Book book) {
         books.add(book);
     }
 
     /* */
-    void deleteBook(int bookID) {
+    public void deleteBook(int bookID) {
         /* 删除成功标记 */
         boolean deleteFlag = false;
         for (Book book : books) {
@@ -38,14 +38,37 @@ public class Manager {
     }
 
     /**/
-    Book queryByID(int bookID) {
-        return null;
-
+    public Book queryByID(int bookID) {
+        boolean queryFlag = false;
+        Book ans = null;
+        for (Book book : books) {
+            if (book.bookId == bookID) {
+                ans = book;
+                queryFlag = true;
+            }
+        }
+        if (!queryFlag) {
+            System.out.println("No such book!");
+            return null;
+        }
+        return ans;
     }
 
     /**/
-    Book queryByName(String bookName) {
-        return null;
+    public Book queryByName(String bookName) {
+        boolean queryFlag = false;
+        Book ans = null;
+        for (Book book : books) {
+            if (book.name == bookName) {
+                ans = book;
+                queryFlag = true;
+            }
+        }
+        if (!queryFlag) {
+            System.out.println("No such book!");
+            return null;
+        }
+        return ans;
     }
 
 

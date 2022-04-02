@@ -1,7 +1,6 @@
 package client;
 
 import dao.Book;
-import dao.BookList;
 import server.Server;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class ClientStub implements Server {
     }
 
     @Override
-    public BookList queryByName(String bookName) {
+    public Book queryByName(String bookName) {
         return null;
     }
 
