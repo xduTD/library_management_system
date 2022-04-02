@@ -29,5 +29,4 @@ public class ServerImpl implements Server {
         return manager.queryByName(name);
     }
 
-
 }

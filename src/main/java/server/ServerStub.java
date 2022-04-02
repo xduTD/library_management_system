@@ -1,22 +1,24 @@
 package server;
 
 import client.Client;
+import dao.Book;
+import utils.Command;
+import utils.NoSuchCommandException;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerStub implements Client {
-    ServerStub stub;
+    Server server;
 
     private ServerSocket serverSocket;
-    private BufferedInputStream in;
-    private BufferedOutputStream out;
     private ObjectInputStream objIn;
     private ObjectOutputStream objOut;
     private Socket currSocket;
 
     ServerStub() {
+        server = new ServerImpl();
         try {
             serverSocket = new ServerSocket(8189);
         } catch (IOException e) {
@@ -28,24 +30,116 @@ public class ServerStub implements Client {
         ServerStub stub = new ServerStub();
 
         while (true) {
-            stub.listenConn();
+            try {
+                stub.listenConn();
+            } catch (NoSuchCommandException e) {
+                System.out.println(e);
+            }
         }
     }
 
-    private void listenConn() {
-        /* get connection & I/O stream */
+    private void listenConn() throws NoSuchCommandException {
+        // get connection and I/O stream
+        Command command = null;
+
+        // get command
         try {
             currSocket = serverSocket.accept();
-            in = new BufferedInputStream(currSocket.getInputStream());
-            out = new BufferedOutputStream(currSocket.getOutputStream());
-            objIn = new ObjectInputStream(in);
-            objOut = new ObjectOutputStream(out);
-        } catch (IOException e) {
+            objIn = new ObjectInputStream(currSocket.getInputStream());
+            objOut = new ObjectOutputStream(currSocket.getOutputStream());
+            command = (Command) objIn.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-        in.
+        // choose function by command
+        if (Command.ADD_BOOK.equals(command)) {
+            addBook();
+        } else if (Command.DELETE_BOOK.equals(command)) {
+            deleteBook();
+        } else if (Command.QUERY_BY_ID.equals(command)) {
+            queryByID();
+        } else if (Command.QUERY_BY_NAME.equals(command)) {
+            queryByName();
+        } else {
+            throw new NoSuchCommandException();
+        }
+    }
 
+    /**
+     * 四个方法，具体功能包括从流中读取命令的参数，和调用server方法后
+     * 通过socket传输返回值给Client端。
+     */
+    private void addBook() {
+        boolean result;
+
+        try {
+            result = server.add((Book)objIn.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            result = false;
+            // e.printStackTrace();
+        }
+        // 将调用结果通过socket返回给ClientStub
+        try {
+            objOut.writeBoolean(result);
+            objOut.flush();
+        } catch (IOException e) {
+            // e.printStackTrace();
+        }
+    }
+
+    private void deleteBook() {
+        boolean result;
+
+        try {
+            result = server.delete(objIn.readInt());
+        } catch (IOException e) {
+            result = false;
+            // e.printStackTrace();
+        }
+        // 将调用结果通过socket返回给ClientStub
+        try {
+            objOut.writeBoolean(result);
+            objOut.flush();
+        } catch (IOException e) {
+            // e.printStackTrace();
+        }
+    }
+
+    private void queryByID() {
+        // 查找后返回的书本对象
+        Book result;
+
+        try {
+            result = server.queryByID(objIn.readInt());
+        } catch (IOException e) {
+            result = null;
+            // e.printStackTrace();
+        }
+        try {
+            objOut.writeObject(result);
+            objOut.flush();
+        } catch (IOException e) {
+            // e.printStackTrace();
+        }
+    }
+
+    private void queryByName() {
+        // 查找后返回的书本对象
+        Book result;
+
+        try {
+            result = server.queryByName((String)objIn.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            result = null;
+            // e.printStackTrace();
+        }
+        try {
+            objOut.writeObject(result);
+            objOut.flush();
+        } catch (IOException e) {
+            // e.printStackTrace();
+        }
     }
 
 }

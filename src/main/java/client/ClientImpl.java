@@ -1,10 +1,10 @@
 package client;
 
-import client.error.ErrorType;
 import dao.Book;
 import server.Server;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.Scanner;
 
 /**
@@ -31,21 +31,24 @@ public class ClientImpl implements Client {
     }
 
     /**
-     * @descrption
+     *
      * @param args
      */
     public static void main(String[] args) {
-        Client client = new ClientImpl();
-        ((ClientImpl)client).handleCommand();
+        ClientImpl client = new ClientImpl();
 
+        // 进入命令行循环读取命令
+        client.handleCommand();
     }
 
     private void handleCommand() {
-        String userInput = null;
+        String userInput;
         int bookID = 0;
         boolean flag = true;
         Scanner scanner = new Scanner(System.in);
         String[] c1 = null;
+        System.out.println("here");
+
         while(flag){
             System.out.println("your command >>");
             userInput = scanner.nextLine();
@@ -76,11 +79,11 @@ public class ClientImpl implements Client {
                 server.delete(bookID);
                 continue;
             }
-            else if(c1[0].equalsIgnoreCase("quit")){
+            else if(c1[0].equalsIgnoreCase("exit")){
                 System.out.println("Quit system!");
                 break;
             }
-            else if(c1[0].equalsIgnoreCase("help")){
+            else if(c1[0].equalsIgnoreCase("-help")){
                 System.out.println("-------------Command Instruction Format----------------");
                 System.out.println("createBook [name] [id]");
                 System.out.println("addBook [name] [id]");
@@ -97,8 +100,6 @@ public class ClientImpl implements Client {
     }
 
 
-
-
     /**
      * 大概是这么个实现，等理清再说：
      * 通过error内部定义的方法来实现具体的报错？
@@ -107,11 +108,6 @@ public class ClientImpl implements Client {
     public void error(String errorMessage) {
         System.out.println(errorMessage);
         // System.out.println("You may use command ‘XXX -help’");
-    }
-
-    public void error(String errorMessage, ErrorType error) {
-        System.out.println(errorMessage);
-        System.out.println("You may use command ‘XXX -help’");
     }
 
 }
