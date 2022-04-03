@@ -2,11 +2,17 @@ package dao;
 
 import java.io.Serializable;
 
-public class Book implements Serializable{
-    int bookId;
+public class Book implements Serializable {
+    int bookID;
     String name;
-    public Book(int bookID, String name){
+
+    public Book(int bookID, String name) {
         this.name = name;
-        this.bookId = bookID;
+        this.bookID = bookID;
+    }
+
+    @Override
+    public String toString() {
+        return "Book: 《" + this.name + "》  id: " + this.bookID;
     }
 }

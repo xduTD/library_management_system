@@ -46,24 +46,29 @@ public class ServerStub implements Client {
         try {
             currSocket = serverSocket.accept();
             objIn = new ObjectInputStream(currSocket.getInputStream());
-            objOut = new ObjectOutputStream(currSocket.getOutputStream());
             command = (Command) objIn.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
-        // choose function by command
-        if (Command.ADD_BOOK.equals(command)) {
-            addBook();
-        } else if (Command.DELETE_BOOK.equals(command)) {
-            deleteBook();
-        } else if (Command.QUERY_BY_ID.equals(command)) {
-            queryByID();
-        } else if (Command.QUERY_BY_NAME.equals(command)) {
-            queryByName();
-        } else {
-            throw new NoSuchCommandException();
+        // choose server function by command
+        switch (command) {
+            case ADD_BOOK -> addBook();
+            case DELETE_BOOK -> deleteBook();
+            case QUERY_BY_ID -> queryByID();
+            case QUERY_BY_NAME -> queryByName();
+            default -> throw new NoSuchCommandException();
         }
+//        if (Command.ADD_BOOK.equals(command)) {
+//            addBook();
+//        } else if (Command.DELETE_BOOK.equals(command)) {
+//            deleteBook();
+//        } else if (Command.QUERY_BY_ID.equals(command)) {
+//            queryByID();
+//        } else if (Command.QUERY_BY_NAME.equals(command)) {
+//            queryByName();
+//        } else {
+//            throw new NoSuchCommandException();
+//        }
     }
 
     /**
@@ -75,16 +80,20 @@ public class ServerStub implements Client {
 
         try {
             result = server.add((Book)objIn.readObject());
+            currSocket.shutdownInput();
+            System.out.println("addBook() return " + result);
         } catch (IOException | ClassNotFoundException e) {
             result = false;
-            // e.printStackTrace();
+            e.printStackTrace();
         }
         // 将调用结果通过socket返回给ClientStub
         try {
+            objOut = new ObjectOutputStream(currSocket.getOutputStream());
             objOut.writeBoolean(result);
             objOut.flush();
+            currSocket.shutdownOutput();
         } catch (IOException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -93,16 +102,20 @@ public class ServerStub implements Client {
 
         try {
             result = server.delete(objIn.readInt());
+            currSocket.shutdownInput();
+            System.out.println("deleteBook() return " + result);
         } catch (IOException e) {
             result = false;
-            // e.printStackTrace();
+            e.printStackTrace();
         }
         // 将调用结果通过socket返回给ClientStub
         try {
+            objOut = new ObjectOutputStream(currSocket.getOutputStream());
             objOut.writeBoolean(result);
             objOut.flush();
+            currSocket.shutdownOutput();
         } catch (IOException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -112,15 +125,23 @@ public class ServerStub implements Client {
 
         try {
             result = server.queryByID(objIn.readInt());
+            currSocket.shutdownInput();
+            if (result == null) {
+                result = new Book(-1, "no such book");
+                System.out.println("queryByID()  no such book");
+            }
+            System.out.println("queryByID() return " + result);
         } catch (IOException e) {
             result = null;
-            // e.printStackTrace();
+            e.printStackTrace();
         }
         try {
+            objOut = new ObjectOutputStream(currSocket.getOutputStream());
             objOut.writeObject(result);
-            objOut.flush();
+            //objOut.flush();
+            currSocket.shutdownOutput();
         } catch (IOException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -130,15 +151,19 @@ public class ServerStub implements Client {
 
         try {
             result = server.queryByName((String)objIn.readObject());
+            currSocket.shutdownInput();
+            System.out.println("queryByName() return " + result);
         } catch (IOException | ClassNotFoundException e) {
             result = null;
-            // e.printStackTrace();
+            e.printStackTrace();
         }
         try {
+            objOut = new ObjectOutputStream(currSocket.getOutputStream());
             objOut.writeObject(result);
-            objOut.flush();
+            //objOut.flush();
+            currSocket.shutdownOutput();
         } catch (IOException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

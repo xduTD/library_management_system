@@ -2,9 +2,9 @@ package client;
 
 import dao.Book;
 import server.Server;
+import utils.NoSuchCommandException;
+import utils.ParameterException;
 
-import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.Scanner;
 
 /**
@@ -22,90 +22,141 @@ import java.util.Scanner;
  */
 
 public class ClientImpl implements Client {
-    /* 对客户端而言的服务器，实际上是ClientStub */
+    /** 对客户端而言的服务器，实际上是ClientStub */
     private Server server;
-    // private Client currentClient;
+    // 如果需要管理员权限，则增加这一行
+    // private static Client currentClient;
 
     public ClientImpl() {
         server = new ClientStub();
     }
 
     /**
-     *
-     * @param args
+     * 客户端的入口
+     * @param args 默认参数
      */
     public static void main(String[] args) {
         ClientImpl client = new ClientImpl();
-
+        // 启动提示语
+        System.out.println("================ Library Management System boot... ================");
         // 进入命令行循环读取命令
         client.handleCommand();
     }
 
+    /**
+     * 命令行交互方法
+     */
     private void handleCommand() {
-        String userInput;
-        int bookID = 0;
-        boolean flag = true;
+        String[] operation;
         Scanner scanner = new Scanner(System.in);
-        String[] c1 = null;
-        System.out.println("here");
 
-        while(flag){
-            System.out.println("your command >>");
-            userInput = scanner.nextLine();
-            c1 = userInput.split(" ");
-            if(c1[0].equalsIgnoreCase("addBook")){
-                bookID = Integer.parseInt(c1[2]);
-                Book nb = new Book(bookID,c1[1]);
-                server.add(nb);
-                continue;
-            }
-            else if(c1[0].equalsIgnoreCase("queryBook")){
-                if(c1[1].equalsIgnoreCase("name")){
-                    System.out.println("find book "+c1[2]+"successfully!");
-                    server.queryByName(c1[2]);
-                    continue;
+        while(true) {
+            System.out.print(">>");
+            operation = scanner.nextLine().split("\\s+", 2);
+            try {
+                switch (operation[0].toLowerCase()) {
+                    case "addbook" -> addBook(operation[1]);
+                    case "deletebook", "delbook" -> deleteBook(operation[1]);
+                    case "querybook" -> queryBook(operation[1]);
+                    case "exit" -> exit();
+                    case "options" -> showOptions();
+                    default -> throw new NoSuchCommandException();
                 }
-                else if(c1[1].equalsIgnoreCase("id")){
-                    bookID = Integer.parseInt(c1[2]);
-                    server.queryByID(bookID);
-                    continue;
+            } catch (ParameterException | NoSuchCommandException e) {
+                System.out.println(e.getMessage());
+            }
+        } // end while() {...}
+    }
+
+    private void addBook(String parameter) throws ParameterException {
+        if (needHelp(parameter.toLowerCase())) {
+            System.out.println("addBook [name] [id]");
+        } else {
+            String[] parameters = parameter.split("\\s+", 2);
+            if (parameters.length != 2) {
+                throw new ParameterException("require 2 parameters, but " + parameters.length + " found");
+            }
+            if (!parameters[0].matches("[0-9]+")) {
+                throw new ParameterException("invalid parameter for integer [bookID]");
+            }
+            server.add(new Book(Integer.parseInt(parameters[0]), parameters[1]));
+        }
+    }
+
+    private void deleteBook(String parameter) throws ParameterException {
+        if (needHelp(parameter.toLowerCase())) {
+            System.out.println("deleteBook/delBook [bookID]");
+        } else {
+            if (!parameter.matches("[0-9]+")) {
+                throw new ParameterException("invalid parameter for integer [bookID]");
+            }
+            server.delete(Integer.parseInt(parameter));
+        }
+    }
+
+    private void queryBook(String parameter) throws ParameterException {
+        Book book;
+        if (needHelp(parameter.toLowerCase())) {
+            System.out.println("queryBook -n [name]");
+            System.out.println("queryBook -id [bookID]");
+        } else {
+            String[] parameters = parameter.split("\\s+", 2);
+            if (parameters.length != 2) {
+                throw new ParameterException("require 2 parameters, but " + parameters.length + " found");
+            }
+            switch (parameters[0].toLowerCase()) {
+                case "-n" -> server.queryByName(parameters[1]);
+                case "-id" -> {
+                    if (!parameters[1].matches("[0-9]+")) {
+                        throw new ParameterException("invalid parameter for integer [bookID]");
+                    }
+                    book = server.queryByID(Integer.parseInt(parameters[1]));
+                    System.out.println(book.toString());
                 }
-                else{
-                    continue;
-                }
-            }
-            else if(c1[0].equalsIgnoreCase("deleteBook")){
-                bookID = Integer.parseInt(c1[2]);
-                server.delete(bookID);
-                continue;
-            }
-            else if(c1[0].equalsIgnoreCase("exit")){
-                System.out.println("Quit system!");
-                break;
-            }
-            else if(c1[0].equalsIgnoreCase("-help")){
-                System.out.println("-------------Command Instruction Format----------------");
-                System.out.println("createBook [name] [id]");
-                System.out.println("addBook [name] [id]");
-                System.out.println("queryBook name [bookName]");
-                System.out.println("queryBook id [bookId]");
-                System.out.println("deleteBook [BookId]");
-                continue;
-            }
-            else{
-                System.out.println("useless command");
-                continue;
+                default -> throw new ParameterException("only support '-n/-id' for the first parameter");
             }
         }
     }
 
+    private void showOptions() {
+        System.out.println("available commands:");
+        System.out.println("    addBook            [id]    [name]");
+        System.out.println("    deleteBook/delBook [BookId]");
+        System.out.println("    queryBook -n       [bookName]");
+        System.out.println("    queryBook -id      [bookId]");
+        System.out.println("    options\n");
+        // System.out.println("You can also type '-help' after command to review the command structure\n");
+    }
+
+    private void exit() {
+        System.out.println("==================System Exit!======================");
+        System.exit(0);
+    }
+
+    /**
+     * 是否在命令后面跟着“-help”，如果是则输出该命
+     * 令的参数信息及其约束
+     ***************************************
+     * @param parameter 用户输入的命令中的参数
+     * @return isMatch 是否匹配 ’-help‘参数格式
+     */
+    private boolean needHelp(String parameter) throws ParameterException {
+        // 参数是否匹配
+        boolean isMatch = parameter.equals("-help");
+        // 参数不等于‘-help’，但是又以‘-help’开头，表示有别的参数
+        // 跟在-help后面，抛出参数异常
+        if (!isMatch && parameter.startsWith("-help")) {
+            throw new ParameterException("no character is allowed following '-help'");
+        }
+        return isMatch;
+    }
 
     /**
      * 大概是这么个实现，等理清再说：
      * 通过error内部定义的方法来实现具体的报错？
      * @param errorMessage 出错信息
      */
-    public void error(String errorMessage) {
+    private void error(String errorMessage) {
         System.out.println(errorMessage);
         // System.out.println("You may use command ‘XXX -help’");
     }

@@ -4,11 +4,11 @@ import dao.Book;
 
 public interface Server {
 
-    boolean add(Book nb);
+    boolean add(Book book);
 
-    boolean delete(int bookId);
+    boolean delete(int bookID);
 
-    Book queryByID(int bookId);
+    Book queryByID(int bookID);
 
     Book queryByName(String name);
 
