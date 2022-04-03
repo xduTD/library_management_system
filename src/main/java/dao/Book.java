@@ -3,7 +3,7 @@ package dao;
 import java.io.Serializable;
 
 public class Book implements Serializable {
-    int bookID;
+    public int bookID;
     String name;
 
     public Book(int bookID, String name) {

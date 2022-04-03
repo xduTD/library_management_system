@@ -2,6 +2,7 @@ package client;
 
 import dao.Book;
 import server.Server;
+import utils.BookQueryException;
 import utils.NoSuchCommandException;
 import utils.ParameterException;
 
@@ -62,7 +63,7 @@ public class ClientImpl implements Client {
                     case "options" -> showOptions();
                     default -> throw new NoSuchCommandException();
                 }
-            } catch (ParameterException | NoSuchCommandException e) {
+            } catch (ParameterException | NoSuchCommandException | BookQueryException e) {
                 System.out.println(e.getMessage());
             }
         } // end while() {...}
@@ -94,7 +95,7 @@ public class ClientImpl implements Client {
         }
     }
 
-    private void queryBook(String parameter) throws ParameterException {
+    private void queryBook(String parameter) throws ParameterException, BookQueryException {
         Book book;
         if (needHelp(parameter.toLowerCase())) {
             System.out.println("queryBook -n [name]");
@@ -105,13 +106,22 @@ public class ClientImpl implements Client {
                 throw new ParameterException("require 2 parameters, but " + parameters.length + " found");
             }
             switch (parameters[0].toLowerCase()) {
-                case "-n" -> server.queryByName(parameters[1]);
+                case "-n" -> {
+                    book = server.queryByName(parameters[1]);
+                    if (book.bookID == -1) {
+                        throw new BookQueryException("no such book named 《" + parameters[1] + "》");
+                    }
+                    System.out.println(book.toString());
+                }
                 case "-id" -> {
                     if (!parameters[1].matches("[0-9]+")) {
                         throw new ParameterException("invalid parameter for integer [bookID]");
                     }
                     book = server.queryByID(Integer.parseInt(parameters[1]));
-                    System.out.println(book.toString());
+                    if (book.bookID == -1) {
+                        throw new BookQueryException("no such book with id:" + parameters[1]);
+                    }
+                    System.out.println(book);
                 }
                 default -> throw new ParameterException("only support '-n/-id' for the first parameter");
             }
