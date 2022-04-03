@@ -152,6 +152,10 @@ public class ServerStub implements Client {
         try {
             result = server.queryByName((String)objIn.readObject());
             currSocket.shutdownInput();
+            if (result == null) {
+                result = new Book(-1, "no such book");
+                System.out.println("queryByName()  no such book");
+            }
             System.out.println("queryByName() return " + result);
         } catch (IOException | ClassNotFoundException e) {
             result = null;

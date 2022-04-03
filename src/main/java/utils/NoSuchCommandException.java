@@ -7,6 +7,6 @@ public class NoSuchCommandException extends Exception {
      * 命令
      */
     public NoSuchCommandException() {
-       super("your command is invalid, check if typo or type 'options' to view available command.");
+       super("your command is invalid, check if typo or type 'options' to view available command");
     }
 }

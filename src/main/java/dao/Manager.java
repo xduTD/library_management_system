@@ -33,11 +33,12 @@ public class Manager {
      *
      */
     public void deleteBook(int bookID) {
+        int bookNumber = books.size();
         /* 删除成功标记 */
         operationFlag = false;
-        for (Book book : books) {
-            if (book.bookID == bookID) {
-                books.remove(book);
+        for (int i = 0; i < bookNumber; i++) {
+            if (books.get(i).bookID == bookID) {
+                books.remove(books.get(i));
                 operationFlag = true;
             }
         }
@@ -47,19 +48,16 @@ public class Manager {
      *
      */
     public Book queryByID(int bookID) {
-        boolean queryFlag = false;
-        Book ans = null;
+        operationFlag = false;
+        Book target = null;
         for (Book book : books) {
             if (book.bookID == bookID) {
-                ans = book;
-                queryFlag = true;
+                target = book;
+                operationFlag = true;
             }
         }
-        if (!queryFlag) {
-            System.out.println("No such book!");
-            return null;
-        }
-        return ans;
+
+        return target;
     }
 
     /**

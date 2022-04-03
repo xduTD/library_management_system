@@ -21,7 +21,6 @@ import java.util.Scanner;
  * define function ‘void error(String errorMessage)’ when met error command
  *
  */
-
 public class ClientImpl implements Client {
     /** 对客户端而言的服务器，实际上是ClientStub */
     private Server server;
